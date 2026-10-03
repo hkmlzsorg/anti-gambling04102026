@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港投胎券模擬器：理性生活，拒絕沉迷賭博</title>
+    <!-- 引入 Tailwind CSS 確保手機與電腦都有良好排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col justify-between">
+
+    <!-- 頂部標題 -->
+    <header class="bg-green-600 text-white shadow-md py-4 px-6 text-center">
+        <h1 class="text-2xl md:text-3xl font-bold">🚫 香港投胎券模擬器</h1>
+        <p class="text-sm md:text-base mt-1 text-red-100">體驗「中獎」的虛幻，拒絕沉迷賭博</p>
+    </header>
+
+    <!-- 主體內容區 -->
+    <main class="container mx-auto px-4 py-6 max-w-2xl flex-grow">
+        
+        <!-- 分頁切換按鈕 -->
+        <div class="grid grid-cols-4 gap-1 mb-6 bg-white rounded-lg shadow p-1 text-xs md:text-sm">
+            <button onclick="switchTab('game')" id="btn-game" class="py-2 font-bold rounded-md bg-red-600 text-white transition">模擬抽獎</button>
+            <button onclick="switchTab('history')" id="btn-history" class="py-2 font-bold rounded-md text-gray-600 transition">開彩記錄</button>
+            <button onclick="switchTab('calculator')" id="btn-calculator" class="py-2 font-bold rounded-md text-gray-600 transition">理財計算機</button>
+            <button onclick="switchTab('probability')" id="btn-probability" class="py-2 font-bold rounded-md text-gray-600 transition">中獎機率計算教學</button>
+        </div>
+
+        <!-- 區塊一：模擬六合彩抽獎 + 個人統計 -->
+        <div id="tab-game" class="space-y-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-3 text-red-600">🎯 虛擬幸運碰運氣</h2>
+                <p class="text-sm text-gray-600 mb-4">選出 6 個號碼（1 - 49），睇下你有沒有機會中頭獎（機率約 1分之 1,398萬）！每注 $10。</p>
+                
+                <!-- 選號區域 -->
+                <div id="number-selector" class="grid grid-cols-7 gap-2 mb-4">
+                    <!-- 由 JS 動態生成 1-49 按鈕 -->
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm">已選號碼：<strong id="selected-count">0</strong> / 6</span>
+                    <button onclick="randomPick()" class="text-sm text-blue-600 hover:underline">電腦隨機選號</button>
+                </div>
+
+                <!-- 單抽與連抽按鈕區 -->
+                <div class="space-y-2">
+                    <button onclick="simulateDraw(1)" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow transition">
+                        立即開彩（$10 / 1注）
+                    </button>
+                    <!-- 改为 grid-cols-2 令 4 個按鈕排列得更好睇 -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="simulateDraw(10)" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg text-sm shadow transition">
+                            快速開彩 10 次 ($100)
+                        </button>
+                        <button onclick="simulateDraw(100)" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg text-sm shadow transition">
+                            快速開彩 100 次 ($1,000)
+                        </button>
+                        <button onclick="simulateDraw(1000)" class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 rounded-lg text-sm shadow transition">
+                            快速開彩 1,000 次 ($10,000)
+                        </button>
+                        <button onclick="simulateExtremeDraw()" class="bg-red-800 hover:bg-red-900 text-white font-bold py-2 rounded-lg text-sm shadow transition">
+                            快速開彩 100,000 次 ($1,000,000)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 抽獎結果顯示 -->
+                <div id="result-box" class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                    <h3 class="font-bold text-lg mb-2" id="result-title"></h3>
+                    <div class="flex gap-2 my-3 justify-center flex-wrap" id="drawn-numbers"></div>
+                    <p id="result-desc" class="text-sm leading-relaxed"></p>
+                </div>
+            </div>
+
+            <!-- 個人模擬統計 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-xl font-bold text-purple-600">📊 你的個人模擬統計</h2>
+                    <button onclick="resetStats()" class="text-xs bg-gray-200 hover:bg-red-100 hover:text-red-600 text-gray-700 px-3 py-1 rounded transition">
+                        重設統計數據
+                    </button>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 text-sm space-y-2">
+                    <p>總共投注次數：<strong id="stat-total-plays">0</strong> 次</p>
+                    <p>累積「倒錢落海」金額：<strong id="stat-total-spent">$0</strong></p>
+                    <p>最佳戰績：<strong id="stat-best-match">未有中獎記錄</strong></p>
+                    
+                    <!-- 新增的趣味價值換算區 -->
+                    <div class="border-t border-purple-200 pt-2 mt-2 space-y-1 text-xs md:text-sm text-purple-900">
+                        <p class="font-bold text-purple-800">💡 你洗咗嘅錢等於：</p>
+                        <p>🍣 <strong>放題：</strong>約 <span id="stat-buffet">0</span> 餐 (每餐 $500)</p>
+                        <p>🦐 <strong>自助餐：</strong>約 <span id="stat-grand-buffet">0</span> 餐 (每餐 $1,000)</p>
+                        <p>📱 <strong>換新電話：</strong>約 <span id="stat-phone">0</span> 部 (每部 $10,000)</p>
+                        <p>✈️ <strong>去旅行：</strong>約 <span id="stat-travel">0</span> 次 (每次 $50,000)</p>
+                    </div>
+
+                    <p class="text-xs text-purple-700 mt-2 italic">* 溫馨提示：你模擬洗掉嘅錢，現實中隨時可以食幾餐好飯！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 區塊二：個人開彩記錄 -->
+        <div id="tab-history" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-amber-600">📜 個人開彩歷史記錄</h2>
+                <button onclick="clearHistory()" class="text-xs bg-gray-200 hover:bg-red-100 hover:text-red-600 text-gray-700 px-3 py-1 rounded transition">
+                    清空記錄
+                </button>
+            </div>
+            <p class="text-sm text-gray-600">這裡會保存你所有每一次單抽或批量模擬的詳細對比記錄：</p>
+            
+            <div id="history-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                <!-- 由 JS 動態生成 -->
+            </div>
+        </div>
+
+        <!-- 區塊三：理財計算機 -->
+        <div id="tab-calculator" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+            <h2 class="text-xl font-bold mb-3 text-blue-600">💰 賭博 vs 儲蓄計算機</h2>
+            <p class="text-sm text-gray-600 mb-4">如果把買六合彩的錢省下來，幾年後會變成怎樣？</p>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">每星期買幾多注？（每注 $10）</label>
+                <input type="number" id="bets-per-week" value="2" min="1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">堅持多久不買？（年）</label>
+                <input type="number" id="years" value="5" min="1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <button onclick="calculateSavings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition">
+                計算省下的金額
+            </button>
+
+            <div id="calc-result" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 hidden">
+                <h3 class="font-bold text-blue-800 mb-2">💡 理財建議：</h3>
+                <p id="savings-text" class="text-sm text-blue-900 leading-relaxed"></p>
+            </div>
+        </div>
+
+        <!-- 區塊四：中獎機率點樣計 -->
+        <div id="tab-probability" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden space-y-4">
+            <h2 class="text-xl font-bold text-emerald-600">📐 拆解六合彩頭獎：點解話係「零嘅希望」？</h2>
+            <p class="text-sm text-gray-600 leading-relaxed">
+                六合彩頭獎難中到極點，個機率係天文數字 <strong>1 分之 13,983,816</strong>。唔洗用複雜方程式，我哋用簡單嘅乘除法就一睇就明：
+            </p>
+
+            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 text-sm space-y-3">
+                <h3 class="font-bold text-emerald-800">1. 分母點嚟？（竉大的組合數量）</h3>
+                <p class="text-emerald-900 leading-relaxed">
+                    喺 49 個號碼入面抽 6 個，因為唔理先後次序，總共有成 <strong>1,398 萬個</strong> 唔同嘅組合。<br>
+                    簡單嚟講，就係 1,398萬張唔同嘅飛入面，得<strong> 1 張</strong> 係中頭獎。
+                </p>
+            </div>
+
+            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 text-sm space-y-3">
+                <h3 class="font-bold text-emerald-800">2. 分子與分母：中獎機會率</h3>
+                <p class="text-emerald-900 leading-relaxed">
+                    買一注（揀 6 個號碼）嘅中獎機率就係：<br>
+                    <span class="font-mono text-base font-bold bg-white px-2 py-1 rounded inline-block my-1">1 / 13,983,816 (約 0.000007%)</span><br>
+                    如果你買 10 注，都只係等於買咗 10 個機會，分母依然係 1,398 萬，分別極微。
+                </p>
+            </div>
+
+            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 text-sm space-y-3">
+                <h3 class="font-bold text-emerald-800">3. 總結：點解唔好博？</h3>
+                <ul class="list-disc pl-5 space-y-1 text-emerald-900">
+                    <li><strong>現實殘酷：</strong>連續行雷劈中嘅機會，都高過你買六合彩中頭獎。</li>
+                    <li><strong>莊家穩賺：</strong>博彩嘅設計本身就係數學上保證長期「輸錢」，錢留返喺袋最實際！</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 求助熱線區塊 -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 text-sm text-amber-900 shadow-sm mt-6">
+            <h3 class="font-bold text-base mb-2 text-amber-800">⚠ 沉迷賭博？尋求專業協助</h3>
+            <p class="mb-2">賭博不僅損害財政，更會破壞家庭與情緒健康。香港有多家專業機構為受賭博問題困擾的人士及家屬提供免費輔導：</p>
+            <ul class="list-disc pl-5 space-y-1">
+                <li><strong>平和基金熱線：</strong> 1834 633</li>
+                <li><strong>東華三院平和坊：</strong> 2827 1000</li>
+                <li><strong>明愛展晴中心：</strong> 2482 2733</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="bg-gray-800 text-gray-400 text-center py-4 text-xs">
+        <p>本程式純屬防賭教育與模擬之用，不涉及真實金錢及博彩。賭博害人，請切勿沉迷。</p>
+    </footer>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        let selectedNumbers = [];
+        const maxNumber = 49;
+
+        // 個人歷史數據（會儲存喺瀏覽器 LocalStorage入面）
+        let userStats = JSON.parse(localStorage.getItem('anti_gambling_stats')) || {
+            plays: 0,
+            spent: 0,
+            bestMatch: 0
+        };
+
+        // 開彩詳細記錄清單
+        let drawHistory = JSON.parse(localStorage.getItem('anti_gambling_history')) || [];
+
+        // 初始化選號按鈕
+        const selector = document.getElementById('number-selector');
+        for (let i = 1; i <= maxNumber; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerText = i;
+            btn.className = "h-10 bg-gray-200 rounded-lg font-bold text-gray-700 hover:bg-gray-300 transition text-sm";
+            btn.onclick = () => toggleNumber(i, btn);
+            selector.appendChild(btn);
+        }
+
+        function toggleNumber(num, btn) {
+            const index = selectedNumbers.indexOf(num);
+            if (index > -1) {
+                selectedNumbers.splice(index, 1);
+                btn.className = "h-10 bg-gray-200 rounded-lg font-bold text-gray-700 hover:bg-gray-300 transition text-sm";
+            } else {
+                if (selectedNumbers.length >= 6) {
+                    alert("最多只能選擇 6 個號碼！");
+                    return;
+                }
+                selectedNumbers.push(num);
+                btn.className = "h-10 bg-red-600 text-white rounded-lg font-bold transition text-sm shadow";
+            }
+            document.getElementById('selected-count').innerText = selectedNumbers.length;
+        }
+
+        function randomPick() {
+            selectedNumbers = [];
+            const buttons = selector.children;
+            for (let b of buttons) {
+                b.className = "h-10 bg-gray-200 rounded-lg font-bold text-gray-700 hover:bg-gray-300 transition text-sm";
+            }
+            while (selectedNumbers.length < 6) {
+                let r = Math.floor(Math.random() * maxNumber) + 1;
+                if (!selectedNumbers.includes(r)) {
+                    selectedNumbers.push(r);
+                    buttons[r - 1].className = "h-10 bg-red-600 text-white rounded-lg font-bold transition text-sm shadow";
+                }
+            }
+            document.getElementById('selected-count').innerText = 6;
+        }
+
+        // 處理 100,000 次極端開彩的警告函數
+        function simulateExtremeDraw() {
+            alert("喂，清醒啲啦！呢個掣唔畀禁架，快啲揀返其他正常選項，唔係連模擬賭博都上癮呀？");
+        }
+
+        function simulateDraw(times) {
+            if (selectedNumbers.length < 6) {
+                alert("請先選夠 6 個號碼（或點擊隨機選號）！");
+                return;
+            }
+
+            const resultBox = document.getElementById('result-box');
+            const resultTitle = document.getElementById('result-title');
+            const drawnNumbersDiv = document.getElementById('drawn-numbers');
+            const resultDesc = document.getElementById('result-desc');
+
+            resultBox.classList.remove('hidden');
+            drawnNumbersDiv.innerHTML = '';
+
+            let timeString = new Date().toLocaleString('zh-HK');
+            let userPickedCopy = [...selectedNumbers].sort((a, b) => a - b);
+
+            if (times === 1) {
+                userStats.plays += 1;
+                userStats.spent += 10;
+
+                let drawn = [];
+                while (drawn.length < 7) {
+                    let r = Math.floor(Math.random() * maxNumber) + 1;
+                    if (!drawn.includes(r)) drawn.push(r);
+                }
+                let special = drawn.pop(); 
+                let normalDrawn = [...drawn].sort((a, b) => a - b);
+
+                let matchCount = selectedNumbers.filter(n => normalDrawn.includes(n)).length;
+                let hasSpecial = selectedNumbers.includes(special);
+
+                if (matchCount > userStats.bestMatch) {
+                    userStats.bestMatch = matchCount;
+                }
+
+                // 記錄進歷史
+                drawHistory.unshift({
+                    time: timeString,
+                    type: '單注開彩',
+                    spent: 10,
+                    picked: userPickedCopy,
+                    drawn: normalDrawn,
+                    special: special,
+                    match: matchCount,
+                    desc: `中了 ${matchCount} 個字` + (hasSpecial ? ' (含特別號碼)' : '')
+                });
+
+                localStorage.setItem('anti_gambling_stats', JSON.stringify(userStats));
+                localStorage.setItem('anti_gambling_history', JSON.stringify(drawHistory));
+                updateStatsUI();
+
+                normalDrawn.forEach(n => {
+                    let span = document.createElement('span');
+                    span.innerText = n;
+                    span.className = `w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${selectedNumbers.includes(n) ? 'bg-red-600 text-white' : 'bg-gray-300 text-gray-700'}`;
+                    drawnNumbersDiv.appendChild(span);
+                });
+                let spSpan = document.createElement('span');
+                spSpan.innerText = "+" + special;
+                spSpan.className = `px-2 h-8 rounded-full flex items-center justify-center font-bold text-xs ${hasSpecial ? 'bg-blue-600 text-white' : 'bg-blue-200 text-blue-800'}`;
+                drawnNumbersDiv.appendChild(spSpan);
+
+                if (matchCount === 6) {
+                    resultTitle.innerText = "🎉 奇蹟發生了！（模擬中頭獎）";
+                    resultDesc.innerText = `恭喜你！在現實中，這個機率大約是 1 分之 1,398,3816。但記住，這只是模擬。現實中長期買六合彩，中頭獎的機率比被雷劈中還要低，千萬不要抱持僥倖心態！`;
+                } else {
+                    resultTitle.innerText = `😢 結果：只中了 ${matchCount} 個字`;
+                    resultDesc.innerText = `不出所料，又係唔中！你今次又為模擬慈善事業貢獻咗 $10。`;
+                }
+
+            } else {
+                let totalCost = times * 10;
+                userStats.plays += times;
+                userStats.spent += totalCost;
+
+                let matchStats = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+                let maxMatchThisBatch = 0;
+                let batchRecords = []; // 儲存多次開彩的詳細記錄，以便提取最後 5 則
+
+                for (let i = 0; i < times; i++) {
+                    let drawn = [];
+                    while (drawn.length < 7) {
+                        let r = Math.floor(Math.random() * maxNumber) + 1;
+                        if (!drawn.includes(r)) drawn.push(r);
+                    }
+                    let special = drawn.pop();
+                    let normalDrawn = [...drawn].sort((a, b) => a - b);
+
+                    let matchCount = selectedNumbers.filter(n => normalDrawn.includes(n)).length;
+                    let hasSpecial = selectedNumbers.includes(special);
+                    matchStats[matchCount]++;
+
+                    if (matchCount > maxMatchThisBatch) {
+                        maxMatchThisBatch = matchCount;
+                    }
+
+                    // 收集每次的獨立詳細資料
+                    batchRecords.push({
+                        time: timeString,
+                        type: `批量開彩 (${i+1}/${times})`,
+                        spent: 10,
+                        picked: userPickedCopy,
+                        drawn: normalDrawn,
+                        special: special,
+                        match: matchCount,
+                        desc: `中了 ${matchCount} 個字` + (hasSpecial ? ' (含特別號碼)' : '')
+                    });
+                }
+
+                if (maxMatchThisBatch > userStats.bestMatch) {
+                    userStats.bestMatch = maxMatchThisBatch;
+                }
+
+                // 取出該批次中的最後 5 則記錄加入歷史（反轉順序讓最新的排在最前）
+                let lastFiveBatchRecords = batchRecords.slice(-5).reverse();
+                lastFiveBatchRecords.forEach(record => {
+                    drawHistory.unshift(record);
+                });
+
+                localStorage.setItem('anti_gambling_stats', JSON.stringify(userStats));
+                localStorage.setItem('anti_gambling_history', JSON.stringify(drawHistory));
+                updateStatsUI();
+
+                resultTitle.innerText = `📊 快速開彩 ${times} 次總結（共洗費 $${totalCost.toLocaleString()}）`;
+                
+                let descHTML = `今次批量模擬入面，你嘅戰績分佈如下：<br>`;
+                descHTML += `<ul class="list-disc pl-5 mt-2 space-y-1 text-xs md:text-sm">`;
+                for (let m = 6; m >= 0; m--) {
+                    if (matchStats[m] > 0 || m === 6) {
+                        descHTML += `<li>中 <strong>${m}</strong> 個字：<strong>${matchStats[m]}</strong> 次</li>`;
+                    }
+                }
+                descHTML += `</ul><br>`;
+
+                if (matchStats[6] > 0) {
+                    descHTML += `<strong class="text-red-600">💥 嘩！你竟然喺呢 ${times} 次入面中咗 ${matchStats[6]} 次頭獎！不過現實中咁樣發生嘅機率微乎其微！</strong>`;
+                } else {
+                    descHTML += `<strong>💡 真相：連續買咗 ${times} 次，連一個頭獎都見唔到！你嘅荷包已經蒸發咗 $${totalCost.toLocaleString()}。這就是博彩的本質——莊家永遠係大贏家。</strong>`;
+                }
+                descHTML += `<br><span class="text-xs text-gray-500 italic mt-2 block">ℹ️ 註：多次開彩已將其中的最後 5 則詳細結果寫入「開彩記錄」分頁中。</span>`;
+
+                resultDesc.innerHTML = descHTML;
+            }
+        }
+
+        function updateStatsUI() {
+            document.getElementById('stat-total-plays').innerText = userStats.plays;
+            document.getElementById('stat-total-spent').innerText = `$${userStats.spent.toLocaleString()}`;
+            document.getElementById('stat-best-match').innerText = userStats.bestMatch > 0 ? `最高中過 ${userStats.bestMatch} 個字` : "未有中獎記錄";
+
+            // 計算並更新趣味換算數值 (保留 1 位小數或整數)
+            let spent = userStats.spent;
+            document.getElementById('stat-buffet').innerText = (spent / 500).toFixed(spent % 500 === 0 ? 0 : 1);
+            document.getElementById('stat-grand-buffet').innerText = (spent / 1000).toFixed(spent % 1000 === 0 ? 0 : 1);
+            document.getElementById('stat-phone').innerText = (spent / 10000).toFixed(spent % 10000 === 0 ? 0 : 2);
+            document.getElementById('stat-travel').innerText = (spent / 50000).toFixed(spent % 50000 === 0 ? 0 : 2);
+        }
+
+        function resetStats() {
+            if (confirm("確定要重設個人的模擬統計數據（投注次數、洗費、最佳戰績）嗎？")) {
+                userStats = { plays: 0, spent: 0, bestMatch: 0 };
+                localStorage.removeItem('anti_gambling_stats');
+                updateStatsUI();
+            }
+        }
+
+        function renderHistoryList() {
+            const historyContainer = document.getElementById('history-list');
+            historyContainer.innerHTML = '';
+
+            if (drawHistory.length === 0) {
+                historyContainer.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">暫時未有開彩記錄，快去「模擬抽獎」玩幾局啦！</p>`;
+                return;
+            }
+
+            drawHistory.forEach((item, index) => {
+                let div = document.createElement('div');
+                div.className = "bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs space-y-2";
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-center text-gray-500 border-b pb-1">
+                        <span><strong>#${drawHistory.length - index}</strong> [${item.time}]</span>
+                        <span class="text-red-600 font-bold">${item.type} (洗費 $${item.spent})</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600 font-medium">你的選號：</span>
+                        <span class="text-gray-800 font-mono">${item.picked.join(', ')}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600 font-medium">開彩結果：</span>
+                        <span class="text-blue-700 font-mono">${item.drawn.join(', ')} + <strong class="text-indigo-600">(${item.special})</strong></span>
+                    </div>
+                    <div class="text-purple-700 font-semibold bg-purple-50 p-1.5 rounded">
+                        結 果：${item.desc}
+                    </div>
+                `;
+                historyContainer.appendChild(div);
+            });
+        }
+
+        function clearHistory() {
+            if (confirm("確定要清空所有開彩歷史記錄嗎？")) {
+                drawHistory = [];
+                localStorage.removeItem('anti_gambling_history');
+                renderHistoryList();
+            }
+        }
+
+        // 分頁切換功能
+        function switchTab(tab) {
+            const gameTab = document.getElementById('tab-game');
+            const historyTab = document.getElementById('tab-history');
+            const calcTab = document.getElementById('tab-calculator');
+            const probTab = document.getElementById('tab-probability');
+            
+            const btnGame = document.getElementById('btn-game');
+            const btnHistory = document.getElementById('btn-history');
+            const btnCalc = document.getElementById('btn-calculator');
+            const btnProb = document.getElementById('btn-probability');
+
+            gameTab.classList.add('hidden');
+            historyTab.classList.add('hidden');
+            calcTab.classList.add('hidden');
+            probTab.classList.add('hidden');
+            
+            btnGame.className = "py-2 font-bold rounded-md text-gray-600 transition";
+            btnHistory.className = "py-2 font-bold rounded-md text-gray-600 transition";
+            btnCalc.className = "py-2 font-bold rounded-md text-gray-600 transition";
+            btnProb.className = "py-2 font-bold rounded-md text-gray-600 transition";
+
+            if (tab === 'game') {
+                gameTab.classList.remove('hidden');
+                btnGame.className = "py-2 font-bold rounded-md bg-red-600 text-white transition";
+                updateStatsUI();
+            } else if (tab === 'history') {
+                historyTab.classList.remove('hidden');
+                btnHistory.className = "py-2 font-bold rounded-md bg-amber-600 text-white transition";
+                renderHistoryList();
+            } else if (tab === 'calculator') {
+                calcTab.classList.remove('hidden');
+                btnCalc.className = "py-2 font-bold rounded-md bg-blue-600 text-white transition";
+            } else if (tab === 'probability') {
+                probTab.classList.remove('hidden');
+                btnProb.className = "py-2 font-bold rounded-md bg-emerald-600 text-white transition";
+            }
+        }
+
+        // 計算儲蓄
+        function calculateSavings() {
+            let bets = parseInt(document.getElementById('bets-per-week').value) || 0;
+            let years = parseInt(document.getElementById('years').value) || 0;
+
+            let totalWeeks = years * 52;
+            let totalSpent = bets * 10 * totalWeeks;
+
+            const calcResult = document.getElementById('calc-result');
+            const savingsText = document.getElementById('savings-text');
+
+            calcResult.classList.remove('hidden');
+            savingsText.innerHTML = `如果你堅持每星期買 ${bets} 注（每星期洗費 $${bets * 10}），經過 <strong>${years} 年</strong> 後，你總共會將 <strong>$${totalSpent.toLocaleString()}</strong> 送給馬會。<br><br>這筆錢足夠讓你作為實實在在的應急基金！拒絕賭博，由理財開始。`;
+        }
+
+        // 頁面初次載入時更新一次統計
+        updateStatsUI();
+    </script>
+</body>
+</html>
